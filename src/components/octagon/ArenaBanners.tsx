@@ -1,3 +1,6 @@
+import { useRef } from 'react';
+import { useFrame } from '@react-three/fiber';
+import * as THREE from 'three';
 import { AD_SPACES } from './data';
 
 interface ArenaBannersProps {
@@ -14,63 +17,138 @@ export const ArenaBanners = ({
   onAdSpaceHover,
 }: ArenaBannersProps) => {
   const banners = AD_SPACES.filter((space) => space.type === 'banner');
+  const screenRefs = useRef<THREE.Mesh[]>([]);
 
   const isHighlighted = (id: string) => selectedAdSpace === id || hoveredAdSpace === id;
 
+  // Animated LED screen effect
+  useFrame((state) => {
+    screenRefs.current.forEach((ref, i) => {
+      if (ref) {
+        const material = ref.material as THREE.MeshStandardMaterial;
+        const baseIntensity = isHighlighted(banners[i]?.id) ? 0.6 : 0.25;
+        material.emissiveIntensity = baseIntensity + Math.sin(state.clock.elapsedTime * 2 + i) * 0.05;
+      }
+    });
+  });
+
   return (
     <group>
-      {banners.map((banner) => (
+      {banners.map((banner, index) => (
         <group
           key={banner.id}
           position={banner.position}
           rotation={banner.rotation ? banner.rotation : [0, 0, 0]}
         >
-          {/* Banner frame */}
-          <mesh>
-            <boxGeometry args={[20, 4, 0.3]} />
-            <meshStandardMaterial color="#111111" metalness={0.5} roughness={0.5} />
+          {/* Banner support structure */}
+          <mesh position={[0, 0, -0.3]}>
+            <boxGeometry args={[22, 5, 0.4]} />
+            <meshStandardMaterial 
+              color="#0a0a10" 
+              metalness={0.8} 
+              roughness={0.3} 
+            />
+          </mesh>
+
+          {/* LED screen frame */}
+          <mesh position={[0, 0, -0.05]}>
+            <boxGeometry args={[21, 4.2, 0.2]} />
+            <meshStandardMaterial 
+              color="#15151f" 
+              metalness={0.9} 
+              roughness={0.2} 
+            />
           </mesh>
 
           {/* LED screen surface */}
           <mesh
-            position={[0, 0, 0.16]}
+            ref={(el) => { if (el) screenRefs.current[index] = el; }}
+            position={[0, 0, 0.06]}
             onClick={() => onAdSpaceClick(banner.id)}
             onPointerEnter={() => onAdSpaceHover(banner.id)}
             onPointerLeave={() => onAdSpaceHover(null)}
           >
-            <planeGeometry args={[19.5, 3.5]} />
+            <planeGeometry args={[20, 3.8]} />
             <meshStandardMaterial
-              color={isHighlighted(banner.id) ? '#4a9eff' : '#0a0a15'}
-              emissive={isHighlighted(banner.id) ? '#4a9eff' : '#1a1a2e'}
-              emissiveIntensity={isHighlighted(banner.id) ? 0.5 : 0.2}
+              color={isHighlighted(banner.id) ? '#1a3a5c' : '#08080f'}
+              emissive={isHighlighted(banner.id) ? '#2563eb' : '#101020'}
+              emissiveIntensity={isHighlighted(banner.id) ? 0.6 : 0.25}
             />
           </mesh>
 
           {/* Screen border glow */}
-          <mesh position={[0, 0, 0.14]}>
-            <planeGeometry args={[19.8, 3.8]} />
+          <mesh position={[0, 0, 0.04]}>
+            <planeGeometry args={[20.4, 4.2]} />
             <meshStandardMaterial
-              color="#c9a227"
-              emissive="#c9a227"
-              emissiveIntensity={0.3}
+              color="#d4af37"
               transparent
-              opacity={0.5}
+              opacity={0.15}
+              emissive="#d4af37"
+              emissiveIntensity={0.3}
             />
+          </mesh>
+
+          {/* Placeholder content indicator */}
+          <mesh position={[0, 0, 0.08]}>
+            <planeGeometry args={[12, 1.5]} />
+            <meshStandardMaterial
+              color="#0a0a15"
+              transparent
+              opacity={0.9}
+            />
+          </mesh>
+
+          {/* Screen edge lights */}
+          <mesh position={[-10.3, 0, 0]}>
+            <boxGeometry args={[0.15, 4, 0.15]} />
+            <meshStandardMaterial
+              color="#d4af37"
+              emissive="#d4af37"
+              emissiveIntensity={0.5}
+            />
+          </mesh>
+          <mesh position={[10.3, 0, 0]}>
+            <boxGeometry args={[0.15, 4, 0.15]} />
+            <meshStandardMaterial
+              color="#d4af37"
+              emissive="#d4af37"
+              emissiveIntensity={0.5}
+            />
+          </mesh>
+
+          {/* Support pylons */}
+          <mesh position={[-9, -5, -0.5]}>
+            <cylinderGeometry args={[0.15, 0.2, 8, 8]} />
+            <meshStandardMaterial color="#1a1a25" metalness={0.9} roughness={0.2} />
+          </mesh>
+          <mesh position={[9, -5, -0.5]}>
+            <cylinderGeometry args={[0.15, 0.2, 8, 8]} />
+            <meshStandardMaterial color="#1a1a25" metalness={0.9} roughness={0.2} />
           </mesh>
         </group>
       ))}
 
-      {/* Arena structure hints */}
+      {/* Jumbotron screens - smaller versions around the arena */}
       {[
-        [0, 20, -30],
-        [0, 20, 30],
-        [30, 20, 0],
-        [-30, 20, 0],
-      ].map((pos, i) => (
-        <mesh key={i} position={pos as [number, number, number]}>
-          <boxGeometry args={[25, 15, 2]} />
-          <meshStandardMaterial color="#0a0a0a" transparent opacity={0.8} />
-        </mesh>
+        { pos: [22, 16, -22] as [number, number, number], rot: [0, Math.PI / 4, 0] as [number, number, number] },
+        { pos: [-22, 16, -22] as [number, number, number], rot: [0, -Math.PI / 4, 0] as [number, number, number] },
+        { pos: [22, 16, 22] as [number, number, number], rot: [0, -Math.PI / 4 + Math.PI, 0] as [number, number, number] },
+        { pos: [-22, 16, 22] as [number, number, number], rot: [0, Math.PI / 4 + Math.PI, 0] as [number, number, number] },
+      ].map((screen, i) => (
+        <group key={i} position={screen.pos} rotation={screen.rot}>
+          <mesh>
+            <boxGeometry args={[10, 6, 0.5]} />
+            <meshStandardMaterial color="#0a0a12" metalness={0.7} roughness={0.3} />
+          </mesh>
+          <mesh position={[0, 0, 0.26]}>
+            <planeGeometry args={[9.5, 5.5]} />
+            <meshStandardMaterial
+              color="#050510"
+              emissive="#0a0a25"
+              emissiveIntensity={0.2}
+            />
+          </mesh>
+        </group>
       ))}
     </group>
   );
