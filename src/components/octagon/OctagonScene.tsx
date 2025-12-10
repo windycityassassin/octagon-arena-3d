@@ -47,12 +47,22 @@ const SceneContent = ({
         hoveredAdSpace={hoveredAdSpace}
         onAdSpaceHover={onAdSpaceHover}
       />
-      <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade speed={1} />
+      <Stars radius={150} depth={80} count={2000} factor={5} saturation={0} fade speed={0.5} />
       <Environment preset="night" />
-      <fog attach="fog" args={['#050510', 30, 100]} />
+      <fog attach="fog" args={['#020208', 40, 120]} />
     </>
   );
 };
+
+// Loading screen component
+const LoadingScreen = () => (
+  <div className="absolute inset-0 flex items-center justify-center bg-background z-50">
+    <div className="text-center">
+      <div className="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+      <p className="text-muted-foreground text-sm tracking-wider uppercase">Loading Arena...</p>
+    </div>
+  </div>
+);
 
 export const OctagonScene = () => {
   const controlsRef = useRef<any>(null);
@@ -91,39 +101,49 @@ export const OctagonScene = () => {
   }, []);
 
   return (
-    <div className="relative w-full h-screen bg-background overflow-hidden">
-      {/* Gradient overlay for depth */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/20 pointer-events-none z-[1]" />
+    <div className="relative w-full h-screen overflow-hidden scene-container">
+      {/* Vignette overlay */}
+      <div className="vignette z-[1]" />
       
+      {/* Top gradient overlay */}
+      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-background/40 to-transparent pointer-events-none z-[1]" />
+      
+      {/* Bottom gradient overlay */}
+      <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background/60 to-transparent pointer-events-none z-[1]" />
+
       <Canvas 
         shadows 
         gl={{ 
           antialias: true, 
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.2,
+          toneMappingExposure: 1.1,
+          powerPreference: 'high-performance',
         }}
-        className="!bg-[#050510]"
+        dpr={[1, 2]}
+        className="!bg-transparent"
       >
         <PerspectiveCamera
           ref={cameraRef}
           makeDefault
           position={CAMERA_PRESETS[0].position}
-          fov={55}
+          fov={50}
           near={0.1}
-          far={200}
+          far={250}
         />
         <OrbitControls
           ref={controlsRef}
           enablePan={true}
           enableZoom={true}
           enableRotate={true}
-          minDistance={6}
-          maxDistance={60}
-          maxPolarAngle={Math.PI / 2 - 0.05}
-          minPolarAngle={0.1}
-          target={[0, 1, 0]}
+          minDistance={8}
+          maxDistance={70}
+          maxPolarAngle={Math.PI / 2 - 0.08}
+          minPolarAngle={0.15}
+          target={[0, 1.5, 0]}
           enableDamping={true}
           dampingFactor={0.05}
+          rotateSpeed={0.5}
+          zoomSpeed={0.8}
         />
         <Suspense fallback={null}>
           <SceneContent
@@ -151,26 +171,31 @@ export const OctagonScene = () => {
         onAdSpaceHover={setHoveredAdSpace}
       />
 
-      {/* Instructions */}
+      {/* Instructions bar */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10">
-        <div className="glass-panel rounded-full px-6 py-3 text-sm text-muted-foreground flex items-center gap-4">
+        <div className="glass-panel rounded-full px-6 py-3 text-sm text-muted-foreground flex items-center gap-5">
           <span className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            Click & drag to orbit
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
+            </span>
+            <span className="font-medium">Drag to orbit</span>
           </span>
-          <span className="text-border">•</span>
-          <span>Scroll to zoom</span>
-          <span className="text-border">•</span>
-          <span>Click ad spaces for details</span>
+          <span className="text-border/50">•</span>
+          <span className="font-medium">Scroll to zoom</span>
+          <span className="text-border/50">•</span>
+          <span className="font-medium">Click ad spaces for details</span>
         </div>
       </div>
 
       {/* Branding */}
       <div className="absolute bottom-6 left-6 z-10">
-        <h1 className="text-2xl font-bold tracking-widest text-foreground text-glow">
+        <h1 className="text-3xl font-black tracking-wider text-foreground text-glow">
           OCTAGON<span className="text-primary">AD</span>
         </h1>
-        <p className="text-xs text-muted-foreground tracking-wider mt-1">PREMIUM FIGHT ADVERTISING</p>
+        <p className="text-xs text-muted-foreground tracking-widest mt-1 uppercase font-medium">
+          Premium Fight Advertising
+        </p>
       </div>
     </div>
   );

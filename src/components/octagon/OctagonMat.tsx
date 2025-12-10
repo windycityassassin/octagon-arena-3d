@@ -9,29 +9,41 @@ interface OctagonMatProps {
   onAdSpaceHover: (id: string | null) => void;
 }
 
+// UFC Octagon is 30 feet across (9.14m) - we'll use 7.5 units as radius for scale
+const OCTAGON_RADIUS = 7.5;
+const SIDES = 8;
+
 export const OctagonMat = ({
   onAdSpaceClick,
   selectedAdSpace,
   hoveredAdSpace,
   onAdSpaceHover,
 }: OctagonMatProps) => {
-  const centerRef = useRef<THREE.Mesh>(null);
-  const glowRef = useRef<THREE.Mesh>(null);
+  const pulseRef = useRef<THREE.Mesh>(null);
+  const centerLogoRef = useRef<THREE.Mesh>(null);
 
   const octagonShape = useMemo(() => {
     const shape = new THREE.Shape();
-    const sides = 8;
-    const radius = 7.5;
+    for (let i = 0; i < SIDES; i++) {
+      const angle = (i * Math.PI * 2) / SIDES - Math.PI / 8;
+      const x = Math.cos(angle) * OCTAGON_RADIUS;
+      const y = Math.sin(angle) * OCTAGON_RADIUS;
+      if (i === 0) shape.moveTo(x, y);
+      else shape.lineTo(x, y);
+    }
+    shape.closePath();
+    return shape;
+  }, []);
 
-    for (let i = 0; i < sides; i++) {
-      const angle = (i * Math.PI * 2) / sides - Math.PI / 8;
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius;
-      if (i === 0) {
-        shape.moveTo(x, y);
-      } else {
-        shape.lineTo(x, y);
-      }
+  const innerOctagonShape = useMemo(() => {
+    const shape = new THREE.Shape();
+    const innerRadius = OCTAGON_RADIUS - 0.4;
+    for (let i = 0; i < SIDES; i++) {
+      const angle = (i * Math.PI * 2) / SIDES - Math.PI / 8;
+      const x = Math.cos(angle) * innerRadius;
+      const y = Math.sin(angle) * innerRadius;
+      if (i === 0) shape.moveTo(x, y);
+      else shape.lineTo(x, y);
     }
     shape.closePath();
     return shape;
@@ -39,149 +51,235 @@ export const OctagonMat = ({
 
   const isHighlighted = (id: string) => selectedAdSpace === id || hoveredAdSpace === id;
 
-  // Animated glow effect
   useFrame((state) => {
-    if (glowRef.current) {
-      const material = glowRef.current.material as THREE.MeshStandardMaterial;
-      material.emissiveIntensity = 0.3 + Math.sin(state.clock.elapsedTime * 2) * 0.15;
+    const time = state.clock.elapsedTime;
+    
+    if (pulseRef.current) {
+      const mat = pulseRef.current.material as THREE.MeshStandardMaterial;
+      mat.emissiveIntensity = 0.3 + Math.sin(time * 1.5) * 0.15;
+    }
+    
+    if (centerLogoRef.current && isHighlighted('mat-center')) {
+      const mat = centerLogoRef.current.material as THREE.MeshStandardMaterial;
+      mat.emissiveIntensity = 0.5 + Math.sin(time * 3) * 0.2;
     }
   });
 
   return (
     <group>
-      {/* Platform base with depth */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.15, 0]} receiveShadow>
-        <cylinderGeometry args={[8.5, 9, 0.3, 8]} />
-        <meshStandardMaterial color="#0a0a0f" roughness={0.8} metalness={0.2} />
+      {/* Elevated Platform Base - Black steel */}
+      <mesh position={[0, -0.3, 0]} receiveShadow castShadow>
+        <cylinderGeometry args={[10, 10.5, 0.6, 8]} />
+        <meshStandardMaterial 
+          color="#0a0a0c"
+          metalness={0.9}
+          roughness={0.4}
+        />
       </mesh>
 
-      {/* Main mat surface with canvas texture feel */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} receiveShadow>
+      {/* Platform Top - Dark brushed steel */}
+      <mesh position={[0, -0.02, 0]} receiveShadow>
+        <cylinderGeometry args={[9.2, 9.2, 0.04, 8]} />
+        <meshStandardMaterial 
+          color="#0f0f12"
+          metalness={0.85}
+          roughness={0.35}
+        />
+      </mesh>
+
+      {/* Main Canvas Mat - Dark gray fighting surface */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]} receiveShadow>
         <shapeGeometry args={[octagonShape]} />
         <meshStandardMaterial 
-          color="#0d0d15" 
-          roughness={0.95} 
-          metalness={0.05}
+          color="#1a1a1e"
+          roughness={0.92}
+          metalness={0.02}
         />
       </mesh>
 
-      {/* Inner mat ring - dark grey */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
-        <ringGeometry args={[6.8, 7.2, 8]} />
+      {/* Inner fighting area - slightly different shade */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.025, 0]} receiveShadow>
+        <shapeGeometry args={[innerOctagonShape]} />
         <meshStandardMaterial 
-          color="#1a1a25" 
-          roughness={0.9}
+          color="#151518"
+          roughness={0.95}
+          metalness={0.01}
         />
       </mesh>
 
-      {/* Gold border outline */}
-      <mesh ref={glowRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]}>
-        <ringGeometry args={[7.35, 7.5, 8]} />
+      {/* Gold border trim - signature octagon edge */}
+      <mesh ref={pulseRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]}>
+        <ringGeometry args={[OCTAGON_RADIUS - 0.15, OCTAGON_RADIUS, 8]} />
         <meshStandardMaterial 
-          color="#d4af37" 
-          roughness={0.3} 
+          color="#d4a520"
+          metalness={0.85}
+          roughness={0.2}
+          emissive="#d4a520"
+          emissiveIntensity={0.35}
+        />
+      </mesh>
+
+      {/* Secondary gold accent line */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.028, 0]}>
+        <ringGeometry args={[OCTAGON_RADIUS - 0.5, OCTAGON_RADIUS - 0.4, 8]} />
+        <meshStandardMaterial 
+          color="#c49a1a"
           metalness={0.8}
-          emissive="#d4af37"
-          emissiveIntensity={0.4}
+          roughness={0.25}
+          emissive="#c49a1a"
+          emissiveIntensity={0.15}
         />
       </mesh>
 
-      {/* Center ad space - main logo area */}
-      <mesh
-        ref={centerRef}
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, 0.02, 0]}
-        onClick={() => onAdSpaceClick('mat-center')}
-        onPointerEnter={() => onAdSpaceHover('mat-center')}
-        onPointerLeave={() => onAdSpaceHover(null)}
-      >
-        <circleGeometry args={[2.8, 64]} />
-        <meshStandardMaterial
-          color={isHighlighted('mat-center') ? '#1a3a5c' : '#0f0f18'}
-          roughness={0.85}
-          emissive={isHighlighted('mat-center') ? '#2563eb' : '#000000'}
-          emissiveIntensity={isHighlighted('mat-center') ? 0.5 : 0}
-        />
-      </mesh>
+      {/* CENTER LOGO - Premium Ad Space */}
+      <group>
+        {/* Outer ring */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.035, 0]}>
+          <ringGeometry args={[2.6, 3, 64]} />
+          <meshStandardMaterial 
+            color="#d4a520"
+            metalness={0.9}
+            roughness={0.15}
+            emissive="#d4a520"
+            emissiveIntensity={0.25}
+          />
+        </mesh>
 
-      {/* Center octagon logo shape */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.025, 0]}>
-        <ringGeometry args={[2.0, 2.2, 8]} />
-        <meshStandardMaterial 
-          color="#d4af37" 
-          roughness={0.4} 
-          metalness={0.6}
-          emissive="#d4af37"
-          emissiveIntensity={0.2}
-        />
-      </mesh>
+        {/* Clickable center area */}
+        <mesh
+          ref={centerLogoRef}
+          rotation={[-Math.PI / 2, 0, 0]}
+          position={[0, 0.04, 0]}
+          onClick={() => onAdSpaceClick('mat-center')}
+          onPointerEnter={() => onAdSpaceHover('mat-center')}
+          onPointerLeave={() => onAdSpaceHover(null)}
+        >
+          <circleGeometry args={[2.6, 64]} />
+          <meshStandardMaterial
+            color={isHighlighted('mat-center') ? '#1e3a5f' : '#0d0d10'}
+            roughness={0.85}
+            metalness={0.1}
+            emissive={isHighlighted('mat-center') ? '#3b82f6' : '#0a0a0f'}
+            emissiveIntensity={isHighlighted('mat-center') ? 0.6 : 0.02}
+          />
+        </mesh>
 
-      {/* Center inner ring */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.025, 0]}>
-        <ringGeometry args={[0.8, 1.0, 32]} />
-        <meshStandardMaterial 
-          color="#d4af37" 
-          roughness={0.4} 
-          metalness={0.6}
-          emissive="#d4af37"
-          emissiveIntensity={0.2}
-        />
-      </mesh>
+        {/* Inner accent ring */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.042, 0]}>
+          <ringGeometry args={[1.8, 2, 64]} />
+          <meshStandardMaterial 
+            color="#d4a520"
+            metalness={0.85}
+            roughness={0.2}
+            transparent
+            opacity={0.7}
+            emissive="#d4a520"
+            emissiveIntensity={0.15}
+          />
+        </mesh>
 
-      {/* Corner ad spaces with better positioning */}
+        {/* Center dot */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.044, 0]}>
+          <circleGeometry args={[0.4, 32]} />
+          <meshStandardMaterial 
+            color="#d4a520"
+            metalness={0.9}
+            roughness={0.15}
+            emissive="#d4a520"
+            emissiveIntensity={0.3}
+          />
+        </mesh>
+
+        {/* Selection indicator ring */}
+        {isHighlighted('mat-center') && (
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]}>
+            <ringGeometry args={[2.9, 3.1, 64]} />
+            <meshStandardMaterial 
+              color="#3b82f6"
+              transparent
+              opacity={0.8}
+              emissive="#3b82f6"
+              emissiveIntensity={0.8}
+            />
+          </mesh>
+        )}
+      </group>
+
+      {/* CORNER AD SPACES */}
       {[
-        { id: 'mat-corner-1', pos: [5.2, 0.02, 0] as [number, number, number], label: 'SPONSOR' },
-        { id: 'mat-corner-2', pos: [-5.2, 0.02, 0] as [number, number, number], label: 'BRAND' },
-      ].map(({ id, pos }) => (
-        <group key={id}>
+        { id: 'mat-corner-1', position: [5, 0.03, 2] as [number, number, number], angle: 0 },
+        { id: 'mat-corner-2', position: [-5, 0.03, -2] as [number, number, number], angle: Math.PI },
+      ].map(({ id, position, angle }) => (
+        <group key={id} position={position} rotation={[0, angle, 0]}>
+          {/* Border ring */}
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
+            <ringGeometry args={[1.3, 1.5, 32]} />
+            <meshStandardMaterial 
+              color="#d4a520"
+              metalness={0.85}
+              roughness={0.2}
+              emissive="#d4a520"
+              emissiveIntensity={0.2}
+            />
+          </mesh>
+          
+          {/* Clickable area */}
           <mesh
             rotation={[-Math.PI / 2, 0, 0]}
-            position={pos}
+            position={[0, 0.01, 0]}
             onClick={() => onAdSpaceClick(id)}
             onPointerEnter={() => onAdSpaceHover(id)}
             onPointerLeave={() => onAdSpaceHover(null)}
           >
-            <circleGeometry args={[1.4, 32]} />
+            <circleGeometry args={[1.3, 32]} />
             <meshStandardMaterial
-              color={isHighlighted(id) ? '#1a3a5c' : '#12121a'}
-              roughness={0.85}
-              emissive={isHighlighted(id) ? '#2563eb' : '#000000'}
+              color={isHighlighted(id) ? '#1e3a5f' : '#0d0d12'}
+              roughness={0.88}
+              metalness={0.05}
+              emissive={isHighlighted(id) ? '#3b82f6' : '#000000'}
               emissiveIntensity={isHighlighted(id) ? 0.5 : 0}
             />
           </mesh>
-          {/* Border ring */}
-          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[pos[0], pos[1] + 0.005, pos[2]]}>
-            <ringGeometry args={[1.3, 1.4, 32]} />
+
+          {/* Inner design */}
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.015, 0]}>
+            <ringGeometry args={[0.6, 0.8, 32]} />
             <meshStandardMaterial 
-              color="#d4af37" 
-              roughness={0.4} 
-              metalness={0.6}
+              color="#c49a1a"
+              metalness={0.8}
+              roughness={0.25}
               transparent
-              opacity={0.8}
+              opacity={0.6}
             />
           </mesh>
+
+          {/* Selection indicator */}
+          {isHighlighted(id) && (
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
+              <ringGeometry args={[1.45, 1.6, 32]} />
+              <meshStandardMaterial 
+                color="#3b82f6"
+                transparent
+                opacity={0.7}
+                emissive="#3b82f6"
+                emissiveIntensity={0.8}
+              />
+            </mesh>
+          )}
         </group>
       ))}
 
-      {/* Additional decorative lines on mat */}
-      {[0, 1, 2, 3].map((i) => {
-        const angle = (i * Math.PI) / 2;
-        return (
-          <mesh 
-            key={i} 
-            rotation={[-Math.PI / 2, 0, angle]} 
-            position={[0, 0.015, 0]}
-          >
-            <planeGeometry args={[0.05, 6]} />
-            <meshStandardMaterial 
-              color="#1a1a25" 
-              roughness={0.9}
-              transparent
-              opacity={0.5}
-            />
-          </mesh>
-        );
-      })}
+      {/* Platform edge lighting strip - subtle underglow */}
+      <mesh position={[0, -0.5, 0]} rotation={[0, Math.PI / 8, 0]}>
+        <torusGeometry args={[10.2, 0.05, 8, 8]} />
+        <meshStandardMaterial
+          color="#d4a520"
+          emissive="#d4a520"
+          emissiveIntensity={0.6}
+          transparent
+          opacity={0.8}
+        />
+      </mesh>
     </group>
   );
 };
