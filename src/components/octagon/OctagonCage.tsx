@@ -10,7 +10,7 @@ interface OctagonCageProps {
 }
 
 const SIDES = 8;
-const RADIUS = 7.5;
+const RADIUS = 9.5;
 const CAGE_HEIGHT = 6;
 const POST_RADIUS = 0.15;
 
