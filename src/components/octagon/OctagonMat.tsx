@@ -131,9 +131,9 @@ export const OctagonMat = ({
         />
       </mesh>
 
-      {/* CENTER LOGO - Premium Ad Space - Expanded for multiple sponsors */}
+      {/* CENTER LOGO - Premium Ad Space - Main sponsor + outer sponsor band */}
       <group>
-        {/* Outermost ring - Third sponsor zone border */}
+        {/* Outermost ring border */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.032, 0]}>
           <ringGeometry args={[4.8, 5, 64]} />
           <meshStandardMaterial 
@@ -145,9 +145,9 @@ export const OctagonMat = ({
           />
         </mesh>
 
-        {/* Third sponsor zone (outermost band) */}
+        {/* Outer sponsor zone (single band) */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.033, 0]}>
-          <ringGeometry args={[3.8, 4.8, 64]} />
+          <ringGeometry args={[2.4, 4.8, 64]} />
           <meshStandardMaterial 
             color="#121215"
             roughness={0.9}
@@ -155,30 +155,8 @@ export const OctagonMat = ({
           />
         </mesh>
 
-        {/* Middle ring - Second sponsor zone border */}
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.035, 0]}>
-          <ringGeometry args={[3.6, 3.8, 64]} />
-          <meshStandardMaterial 
-            color="#d4a520"
-            metalness={0.88}
-            roughness={0.18}
-            emissive="#d4a520"
-            emissiveIntensity={0.22}
-          />
-        </mesh>
-
-        {/* Second sponsor zone (middle band) */}
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.036, 0]}>
-          <ringGeometry args={[2.4, 3.6, 64]} />
-          <meshStandardMaterial 
-            color="#0f0f12"
-            roughness={0.88}
-            metalness={0.05}
-          />
-        </mesh>
-
         {/* Inner ring - Main sponsor zone border */}
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.038, 0]}>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.035, 0]}>
           <ringGeometry args={[2.2, 2.4, 64]} />
           <meshStandardMaterial 
             color="#d4a520"
@@ -189,7 +167,7 @@ export const OctagonMat = ({
           />
         </mesh>
 
-        {/* Main sponsor zone - CENTER (largest clickable area) */}
+        {/* Main sponsor zone - CENTER */}
         <mesh
           ref={centerLogoRef}
           rotation={[-Math.PI / 2, 0, 0]}
