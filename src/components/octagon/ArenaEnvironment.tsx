@@ -176,15 +176,6 @@ export const ArenaEnvironment = () => {
         })}
       </group>
 
-      {/* Central overhead light array */}
-      <mesh position={[0, 28, 0]}>
-        <cylinderGeometry args={[5, 6, 2.5, 8]} />
-        <meshStandardMaterial 
-          color="#0a0a10"
-          metalness={0.92}
-          roughness={0.15}
-        />
-      </mesh>
 
       {/* Jumbotron screens at corners */}
       {[

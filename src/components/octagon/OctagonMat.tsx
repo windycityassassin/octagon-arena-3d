@@ -205,69 +205,6 @@ export const OctagonMat = ({
         )}
       </group>
 
-      {/* CORNER AD SPACES */}
-      {[
-        { id: 'mat-corner-1', position: [5, 0.03, 2] as [number, number, number], angle: 0 },
-        { id: 'mat-corner-2', position: [-5, 0.03, -2] as [number, number, number], angle: Math.PI },
-      ].map(({ id, position, angle }) => (
-        <group key={id} position={position} rotation={[0, angle, 0]}>
-          {/* Border ring */}
-          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
-            <ringGeometry args={[1.3, 1.5, 32]} />
-            <meshStandardMaterial 
-              color="#d4a520"
-              metalness={0.85}
-              roughness={0.2}
-              emissive="#d4a520"
-              emissiveIntensity={0.2}
-            />
-          </mesh>
-          
-          {/* Clickable area */}
-          <mesh
-            rotation={[-Math.PI / 2, 0, 0]}
-            position={[0, 0.01, 0]}
-            onClick={() => onAdSpaceClick(id)}
-            onPointerEnter={() => onAdSpaceHover(id)}
-            onPointerLeave={() => onAdSpaceHover(null)}
-          >
-            <circleGeometry args={[1.3, 32]} />
-            <meshStandardMaterial
-              color={isHighlighted(id) ? '#1e3a5f' : '#0d0d12'}
-              roughness={0.88}
-              metalness={0.05}
-              emissive={isHighlighted(id) ? '#3b82f6' : '#000000'}
-              emissiveIntensity={isHighlighted(id) ? 0.5 : 0}
-            />
-          </mesh>
-
-          {/* Inner design */}
-          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.015, 0]}>
-            <ringGeometry args={[0.6, 0.8, 32]} />
-            <meshStandardMaterial 
-              color="#c49a1a"
-              metalness={0.8}
-              roughness={0.25}
-              transparent
-              opacity={0.6}
-            />
-          </mesh>
-
-          {/* Selection indicator */}
-          {isHighlighted(id) && (
-            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
-              <ringGeometry args={[1.45, 1.6, 32]} />
-              <meshStandardMaterial 
-                color="#3b82f6"
-                transparent
-                opacity={0.7}
-                emissive="#3b82f6"
-                emissiveIntensity={0.8}
-              />
-            </mesh>
-          )}
-        </group>
-      ))}
 
       {/* Platform edge lighting strip - subtle underglow */}
       <mesh position={[0, -0.5, 0]} rotation={[0, Math.PI / 8, 0]}>
