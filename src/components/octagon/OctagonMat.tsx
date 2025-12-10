@@ -9,9 +9,17 @@ interface OctagonMatProps {
   onAdSpaceHover: (id: string | null) => void;
 }
 
-// UFC Octagon is 30 feet across (9.14m) - we'll use 7.5 units as radius for scale
-const OCTAGON_RADIUS = 7.5;
+// Expanded octagon for more ad space
+const OCTAGON_RADIUS = 9.5;
 const SIDES = 8;
+
+// Ad space positions around the mat (between center and edge)
+const PERIMETER_AD_SPACES = [
+  { id: 'mat-north', position: [0, 0.035, -6.8] as [number, number, number], rotation: 0 },
+  { id: 'mat-south', position: [0, 0.035, 6.8] as [number, number, number], rotation: Math.PI },
+  { id: 'mat-east', position: [6.8, 0.035, 0] as [number, number, number], rotation: -Math.PI / 2 },
+  { id: 'mat-west', position: [-6.8, 0.035, 0] as [number, number, number], rotation: Math.PI / 2 },
+];
 
 export const OctagonMat = ({
   onAdSpaceClick,
@@ -37,7 +45,7 @@ export const OctagonMat = ({
 
   const innerOctagonShape = useMemo(() => {
     const shape = new THREE.Shape();
-    const innerRadius = OCTAGON_RADIUS - 0.4;
+    const innerRadius = OCTAGON_RADIUS - 0.5;
     for (let i = 0; i < SIDES; i++) {
       const angle = (i * Math.PI * 2) / SIDES - Math.PI / 8;
       const x = Math.cos(angle) * innerRadius;
@@ -69,7 +77,7 @@ export const OctagonMat = ({
     <group>
       {/* Elevated Platform Base - Black steel */}
       <mesh position={[0, -0.3, 0]} receiveShadow castShadow>
-        <cylinderGeometry args={[10, 10.5, 0.6, 8]} />
+        <cylinderGeometry args={[12, 12.5, 0.6, 8]} />
         <meshStandardMaterial 
           color="#0a0a0c"
           metalness={0.9}
@@ -79,7 +87,7 @@ export const OctagonMat = ({
 
       {/* Platform Top - Dark brushed steel */}
       <mesh position={[0, -0.02, 0]} receiveShadow>
-        <cylinderGeometry args={[9.2, 9.2, 0.04, 8]} />
+        <cylinderGeometry args={[11.2, 11.2, 0.04, 8]} />
         <meshStandardMaterial 
           color="#0f0f12"
           metalness={0.85}
@@ -109,7 +117,7 @@ export const OctagonMat = ({
 
       {/* Gold border trim - signature octagon edge */}
       <mesh ref={pulseRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]}>
-        <ringGeometry args={[OCTAGON_RADIUS - 0.15, OCTAGON_RADIUS, 8]} />
+        <ringGeometry args={[OCTAGON_RADIUS - 0.18, OCTAGON_RADIUS, 8]} />
         <meshStandardMaterial 
           color="#d4a520"
           metalness={0.85}
@@ -121,7 +129,7 @@ export const OctagonMat = ({
 
       {/* Secondary gold accent line */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.028, 0]}>
-        <ringGeometry args={[OCTAGON_RADIUS - 0.5, OCTAGON_RADIUS - 0.4, 8]} />
+        <ringGeometry args={[OCTAGON_RADIUS - 0.6, OCTAGON_RADIUS - 0.5, 8]} />
         <meshStandardMaterial 
           color="#c49a1a"
           metalness={0.8}
@@ -131,11 +139,11 @@ export const OctagonMat = ({
         />
       </mesh>
 
-      {/* CENTER LOGO - Premium Ad Space - Main sponsor + outer sponsor band */}
+      {/* CENTER LOGO - Premium Ad Space */}
       <group>
         {/* Outermost ring border */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.032, 0]}>
-          <ringGeometry args={[4.8, 5, 64]} />
+          <ringGeometry args={[4.2, 4.4, 64]} />
           <meshStandardMaterial 
             color="#d4a520"
             metalness={0.9}
@@ -145,19 +153,27 @@ export const OctagonMat = ({
           />
         </mesh>
 
-        {/* Outer sponsor zone (single band) */}
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.033, 0]}>
-          <ringGeometry args={[2.4, 4.8, 64]} />
+        {/* Outer sponsor zone - clickable */}
+        <mesh
+          rotation={[-Math.PI / 2, 0, 0]}
+          position={[0, 0.033, 0]}
+          onClick={() => onAdSpaceClick('mat-outer-ring')}
+          onPointerEnter={() => onAdSpaceHover('mat-outer-ring')}
+          onPointerLeave={() => onAdSpaceHover(null)}
+        >
+          <ringGeometry args={[2.6, 4.2, 64]} />
           <meshStandardMaterial 
-            color="#121215"
+            color={isHighlighted('mat-outer-ring') ? '#1e3a5f' : '#121215'}
             roughness={0.9}
             metalness={0.05}
+            emissive={isHighlighted('mat-outer-ring') ? '#3b82f6' : '#000000'}
+            emissiveIntensity={isHighlighted('mat-outer-ring') ? 0.4 : 0}
           />
         </mesh>
 
         {/* Inner ring - Main sponsor zone border */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.035, 0]}>
-          <ringGeometry args={[2.2, 2.4, 64]} />
+          <ringGeometry args={[2.4, 2.6, 64]} />
           <meshStandardMaterial 
             color="#d4a520"
             metalness={0.9}
@@ -176,7 +192,7 @@ export const OctagonMat = ({
           onPointerEnter={() => onAdSpaceHover('mat-center')}
           onPointerLeave={() => onAdSpaceHover(null)}
         >
-          <circleGeometry args={[2.2, 64]} />
+          <circleGeometry args={[2.4, 64]} />
           <meshStandardMaterial
             color={isHighlighted('mat-center') ? '#1e3a5f' : '#0d0d10'}
             roughness={0.85}
@@ -186,10 +202,24 @@ export const OctagonMat = ({
           />
         </mesh>
 
-        {/* Selection indicator ring */}
+        {/* Selection indicator for outer ring */}
+        {isHighlighted('mat-outer-ring') && (
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]}>
+            <ringGeometry args={[4.35, 4.55, 64]} />
+            <meshStandardMaterial 
+              color="#3b82f6"
+              transparent
+              opacity={0.8}
+              emissive="#3b82f6"
+              emissiveIntensity={0.8}
+            />
+          </mesh>
+        )}
+
+        {/* Selection indicator for center */}
         {isHighlighted('mat-center') && (
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]}>
-            <ringGeometry args={[4.95, 5.15, 64]} />
+            <ringGeometry args={[2.5, 2.7, 64]} />
             <meshStandardMaterial 
               color="#3b82f6"
               transparent
@@ -201,10 +231,57 @@ export const OctagonMat = ({
         )}
       </group>
 
+      {/* PERIMETER AD SPACES - 4 zones around the mat */}
+      {PERIMETER_AD_SPACES.map(({ id, position, rotation }) => (
+        <group key={id} position={position} rotation={[-Math.PI / 2, rotation, 0]}>
+          {/* Ad space border */}
+          <mesh position={[0, 0, 0.002]}>
+            <planeGeometry args={[3.2, 1.6]} />
+            <meshStandardMaterial 
+              color="#d4a520"
+              metalness={0.85}
+              roughness={0.2}
+              emissive="#d4a520"
+              emissiveIntensity={0.15}
+            />
+          </mesh>
+
+          {/* Clickable ad area */}
+          <mesh
+            position={[0, 0, 0.004]}
+            onClick={() => onAdSpaceClick(id)}
+            onPointerEnter={() => onAdSpaceHover(id)}
+            onPointerLeave={() => onAdSpaceHover(null)}
+          >
+            <planeGeometry args={[3, 1.4]} />
+            <meshStandardMaterial
+              color={isHighlighted(id) ? '#1e3a5f' : '#0e0e12'}
+              roughness={0.88}
+              metalness={0.05}
+              emissive={isHighlighted(id) ? '#3b82f6' : '#000000'}
+              emissiveIntensity={isHighlighted(id) ? 0.5 : 0}
+            />
+          </mesh>
+
+          {/* Selection glow */}
+          {isHighlighted(id) && (
+            <mesh position={[0, 0, 0.006]}>
+              <planeGeometry args={[3.4, 1.8]} />
+              <meshStandardMaterial
+                color="#3b82f6"
+                transparent
+                opacity={0.3}
+                emissive="#3b82f6"
+                emissiveIntensity={0.6}
+              />
+            </mesh>
+          )}
+        </group>
+      ))}
 
       {/* Platform edge lighting strip - subtle underglow */}
       <mesh position={[0, -0.5, 0]} rotation={[0, Math.PI / 8, 0]}>
-        <torusGeometry args={[10.2, 0.05, 8, 8]} />
+        <torusGeometry args={[12.2, 0.06, 8, 8]} />
         <meshStandardMaterial
           color="#d4a520"
           emissive="#d4a520"
