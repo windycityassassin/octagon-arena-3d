@@ -148,46 +148,31 @@ export const OctagonCage = ({
             <ChainLinkMesh width={width - 0.1} height={CAGE_HEIGHT - 0.4} />
           </group>
 
-          {/* Ad banner space on fence */}
+          {/* Invisible clickable area for fence ad space */}
           <mesh
-            position={[0, 0.8, 0.06]}
+            position={[0, 0, 0.03]}
             onClick={() => onAdSpaceClick(id)}
             onPointerEnter={() => onAdSpaceHover(id)}
             onPointerLeave={() => onAdSpaceHover(null)}
+            visible={false}
           >
-            <planeGeometry args={[width * 0.85, CAGE_HEIGHT * 0.35]} />
-            <meshStandardMaterial
-              color={isHighlighted(id) ? '#152540' : '#08080a'}
-              transparent
-              opacity={isHighlighted(id) ? 0.95 : 0.85}
-              emissive={isHighlighted(id) ? '#3b82f6' : '#000000'}
-              emissiveIntensity={isHighlighted(id) ? 0.4 : 0}
-            />
+            <planeGeometry args={[width * 0.9, CAGE_HEIGHT * 0.8]} />
+            <meshBasicMaterial transparent opacity={0} />
           </mesh>
 
-          {/* Ad space frame/border */}
-          <mesh position={[0, 0.8, 0.055]}>
-            <planeGeometry args={[width * 0.87, CAGE_HEIGHT * 0.37]} />
-            <meshStandardMaterial
-              color="#1a1a20"
-              transparent
-              opacity={0.6}
-            />
-          </mesh>
-
-          {/* Highlight indicator when selected */}
+          {/* Highlight glow when selected - subtle outline effect */}
           {isHighlighted(id) && (
             <mesh
               ref={(el) => { if (el) highlightRefs.current[index] = el; }}
-              position={[0, 0.8, 0.07]}
+              position={[0, 0, 0.04]}
             >
-              <planeGeometry args={[width * 0.88, CAGE_HEIGHT * 0.38]} />
+              <planeGeometry args={[width * 0.92, CAGE_HEIGHT * 0.85]} />
               <meshStandardMaterial
-                color="#d4a520"
+                color="#3b82f6"
                 transparent
-                opacity={0.25}
-                emissive="#d4a520"
-                emissiveIntensity={0.5}
+                opacity={0.15}
+                emissive="#3b82f6"
+                emissiveIntensity={0.6}
               />
             </mesh>
           )}
