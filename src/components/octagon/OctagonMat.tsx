@@ -141,9 +141,9 @@ export const OctagonMat = ({
 
       {/* CENTER LOGO - Premium Ad Space */}
       <group>
-        {/* Outermost ring border */}
+        {/* Outermost ring border - much larger, closer to edge */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.032, 0]}>
-          <ringGeometry args={[4.2, 4.4, 64]} />
+          <ringGeometry args={[7.8, 8.0, 8]} />
           <meshStandardMaterial 
             color="#d4a520"
             metalness={0.9}
@@ -153,7 +153,7 @@ export const OctagonMat = ({
           />
         </mesh>
 
-        {/* Outer sponsor zone - clickable */}
+        {/* Outer sponsor zone - clickable - large area for multiple sponsors */}
         <mesh
           rotation={[-Math.PI / 2, 0, 0]}
           position={[0, 0.033, 0]}
@@ -161,7 +161,7 @@ export const OctagonMat = ({
           onPointerEnter={() => onAdSpaceHover('mat-outer-ring')}
           onPointerLeave={() => onAdSpaceHover(null)}
         >
-          <ringGeometry args={[2.6, 4.2, 64]} />
+          <ringGeometry args={[2.8, 7.8, 8]} />
           <meshStandardMaterial 
             color={isHighlighted('mat-outer-ring') ? '#1e3a5f' : '#121215'}
             roughness={0.9}
@@ -173,7 +173,7 @@ export const OctagonMat = ({
 
         {/* Inner ring - Main sponsor zone border */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.035, 0]}>
-          <ringGeometry args={[2.4, 2.6, 64]} />
+          <ringGeometry args={[2.6, 2.8, 64]} />
           <meshStandardMaterial 
             color="#d4a520"
             metalness={0.9}
@@ -192,7 +192,7 @@ export const OctagonMat = ({
           onPointerEnter={() => onAdSpaceHover('mat-center')}
           onPointerLeave={() => onAdSpaceHover(null)}
         >
-          <circleGeometry args={[2.4, 64]} />
+          <circleGeometry args={[2.6, 64]} />
           <meshStandardMaterial
             color={isHighlighted('mat-center') ? '#1e3a5f' : '#0d0d10'}
             roughness={0.85}
@@ -205,7 +205,7 @@ export const OctagonMat = ({
         {/* Selection indicator for outer ring */}
         {isHighlighted('mat-outer-ring') && (
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]}>
-            <ringGeometry args={[4.35, 4.55, 64]} />
+            <ringGeometry args={[7.9, 8.1, 8]} />
             <meshStandardMaterial 
               color="#3b82f6"
               transparent
@@ -219,7 +219,7 @@ export const OctagonMat = ({
         {/* Selection indicator for center */}
         {isHighlighted('mat-center') && (
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]}>
-            <ringGeometry args={[2.5, 2.7, 64]} />
+            <ringGeometry args={[2.7, 2.9, 64]} />
             <meshStandardMaterial 
               color="#3b82f6"
               transparent
